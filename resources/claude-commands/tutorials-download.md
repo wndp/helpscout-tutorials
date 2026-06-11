@@ -20,7 +20,7 @@ Pulls every published article from the configured collection(s) into the configu
    - Total collections + total articles downloaded
    - List of collections with article counts
    - The oldest and newest `updated_at` across all articles
-4. Suggest the user run `/tutorials-review` (if they have one) or `/tutorials-publish` next.
+4. Suggest the user run `/tutorials-review` next (or `/tutorials-publish` if they're publishing edits directly).
 
 ## Notes
 
