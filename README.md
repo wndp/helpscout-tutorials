@@ -25,7 +25,7 @@ The installer:
 - Publishes `config/helpscout-tutorials.php`
 - Adds `HELPSCOUT_DOCS_API_KEY=` to your `.env` if missing
 - Adds `/storage/helpscout-tutorials` to `.gitignore` if missing
-- Copies the three slash-command templates to `.claude/commands/`
+- Copies the slash-command templates to `.claude/commands/`
 
 Get a HelpScout Docs API key from your HelpScout account and set it in `.env`:
 
@@ -68,20 +68,17 @@ php artisan tutorials:create path/to/file.draft.html \
 
 ## Claude Code slash commands
 
-The installer copies three slash-command templates to `.claude/commands/`:
+The installer copies five slash-command templates to `.claude/commands/`:
 
 - `/tutorials-download` — wraps `tutorials:download`
 - `/tutorials-publish` — per-article confirmation loop around `tutorials:publish`
 - `/tutorials-create` — per-draft confirmation loop around `tutorials:create`
+- `/tutorials-review` — compares downloaded articles against the current code and writes `*.proposed.html` updates
+- `/tutorials-coverage` — audits which user-facing surfaces have no tutorial and writes a prioritized gap report
 
-The templates use `php artisan`. If your project uses Sail, adjust to `vendor/bin/sail artisan` after publishing.
+The first three are pure wrappers around the artisan commands and work in any project as-is. The templates use `php artisan`; if your project uses Sail, adjust to `vendor/bin/sail artisan` after publishing.
 
-Two project-specific commands are intentionally **not** included in the package — they encode judgment about your specific codebase:
-
-- `/tutorials-review` — compares articles against the current code and writes `*.proposed.html` updates
-- `/tutorials-coverage` — finds user-facing surfaces with no tutorial
-
-Author those per project. The README in your project's `.claude/commands/` directory is a good place to keep them.
+`/tutorials-review` and `/tutorials-coverage` reason about *your* codebase, so they're written for a **Laravel + Inertia (Vue)** app — backend in `app/`, routes in `routes/web.php`, UI under `resources/js/`. The directory paths are concrete; the only things that vary per app are a few identifiers (your primary layout/nav component, permission props, custom route prefixes), and each command has a note near the top calling those out to confirm.
 
 ## Config
 
