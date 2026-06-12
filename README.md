@@ -18,7 +18,7 @@ Then add it as a dev dependency — this is a tooling package, not something you
 
 ```sh
 composer require --dev wndp/helpscout-tutorials
-php artisan helpscout-tutorials:install
+php artisan tutorials:install
 ```
 
 The installer:

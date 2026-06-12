@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\File;
 
 class InstallCommand extends Command
 {
-    protected $signature = 'helpscout-tutorials:install
+    protected $signature = 'tutorials:install
         {--force : Overwrite existing files when publishing}';
 
     protected $description = 'Publish config, slash-command templates, and tweak .env / .gitignore for HelpScout tutorials.';
