@@ -164,6 +164,88 @@ class HelpScoutDocsClientTest extends TestCase
         });
     }
 
+    public function test_categories_walks_paginated_collection_endpoint(): void
+    {
+        Http::fake([
+            'docsapi.helpscout.net/v1/collections/c1/categories*' => Http::response([
+                'categories' => [
+                    'page' => 1,
+                    'pages' => 1,
+                    'items' => [
+                        ['id' => 'cat1', 'name' => 'How-tos', 'slug' => 'how-tos'],
+                        ['id' => 'cat2', 'name' => 'FAQ', 'slug' => 'faq'],
+                    ],
+                ],
+            ]),
+        ]);
+
+        $client = new HelpScoutDocsClient;
+
+        $ids = collect($client->categories('c1'))->pluck('id')->all();
+
+        $this->assertSame(['cat1', 'cat2'], $ids);
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'pageSize=100'));
+    }
+
+    public function test_create_category_posts_payload_with_reload(): void
+    {
+        Http::fake([
+            'docsapi.helpscout.net/v1/categories*' => Http::response([
+                'category' => ['id' => 'new-cat', 'name' => 'How-tos'],
+            ], 201),
+        ]);
+
+        $client = new HelpScoutDocsClient;
+
+        $result = $client->createCategory(['collectionId' => 'c1', 'name' => 'How-tos']);
+
+        $this->assertSame('new-cat', $result['id']);
+
+        Http::assertSent(function ($request) {
+            return $request->method() === 'POST'
+                && str_contains($request->url(), '/categories')
+                && str_contains($request->url(), 'reload=true')
+                && $request->data() === ['collectionId' => 'c1', 'name' => 'How-tos'];
+        });
+    }
+
+    public function test_update_category_puts_payload_with_reload(): void
+    {
+        Http::fake([
+            'docsapi.helpscout.net/v1/categories/cat1*' => Http::response([
+                'category' => ['id' => 'cat1', 'name' => 'Renamed'],
+            ]),
+        ]);
+
+        $client = new HelpScoutDocsClient;
+
+        $result = $client->updateCategory('cat1', ['name' => 'Renamed']);
+
+        $this->assertSame('Renamed', $result['name']);
+
+        Http::assertSent(function ($request) {
+            return $request->method() === 'PUT'
+                && str_contains($request->url(), '/categories/cat1')
+                && str_contains($request->url(), 'reload=true')
+                && $request->data() === ['name' => 'Renamed'];
+        });
+    }
+
+    public function test_delete_category_sends_delete(): void
+    {
+        Http::fake([
+            'docsapi.helpscout.net/v1/categories/cat1' => Http::response([], 200),
+        ]);
+
+        $client = new HelpScoutDocsClient;
+
+        $client->deleteCategory('cat1');
+
+        Http::assertSent(fn ($request) => $request->method() === 'DELETE'
+            && str_contains($request->url(), '/categories/cat1'));
+    }
+
     public function test_throws_on_non_successful_response(): void
     {
         Http::fake([
