@@ -3,9 +3,12 @@
 namespace Wndp\HelpScoutTutorials;
 
 use Illuminate\Support\ServiceProvider;
+use Wndp\HelpScoutTutorials\Console\CategorizeArticle;
 use Wndp\HelpScoutTutorials\Console\CreateTutorial;
 use Wndp\HelpScoutTutorials\Console\DownloadTutorials;
 use Wndp\HelpScoutTutorials\Console\InstallCommand;
+use Wndp\HelpScoutTutorials\Console\ListCategories;
+use Wndp\HelpScoutTutorials\Console\ManageCategory;
 use Wndp\HelpScoutTutorials\Console\PublishTutorial;
 
 class HelpScoutTutorialsServiceProvider extends ServiceProvider
@@ -25,6 +28,9 @@ class HelpScoutTutorialsServiceProvider extends ServiceProvider
                 DownloadTutorials::class,
                 PublishTutorial::class,
                 CreateTutorial::class,
+                ListCategories::class,
+                ManageCategory::class,
+                CategorizeArticle::class,
                 InstallCommand::class,
             ]);
 

@@ -45,6 +45,78 @@ class HelpScoutDocsClient
     }
 
     /**
+     * Iterate every category in a collection.
+     *
+     * @return iterable<array{id: string, number: int, slug: string, name: string, visibility: string, articleCount: int, order: int}>
+     */
+    public function categories(string $collectionId): iterable
+    {
+        yield from $this->paginate("collections/{$collectionId}/categories", 'categories', [
+            'pageSize' => 100,
+        ]);
+    }
+
+    /**
+     * Fetch a single category.
+     *
+     * @return array<string, mixed>
+     */
+    public function getCategory(string $categoryId): array
+    {
+        $response = $this->request()->get(self::BASE_URL."/categories/{$categoryId}");
+
+        $this->ensureOk($response, "GET /categories/{$categoryId}");
+
+        return $response->json('category') ?? [];
+    }
+
+    /**
+     * Create a new category. Returns the reloaded category.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    public function createCategory(array $payload): array
+    {
+        $response = $this->request()->post(
+            self::BASE_URL.'/categories?reload=true',
+            $payload,
+        );
+
+        $this->ensureOk($response, 'POST /categories');
+
+        return $response->json('category') ?? [];
+    }
+
+    /**
+     * Update a category. Returns the reloaded category.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    public function updateCategory(string $categoryId, array $payload): array
+    {
+        $response = $this->request()->put(
+            self::BASE_URL."/categories/{$categoryId}?reload=true",
+            $payload,
+        );
+
+        $this->ensureOk($response, "PUT /categories/{$categoryId}");
+
+        return $response->json('category') ?? [];
+    }
+
+    /**
+     * Delete a category. Articles in it fall back to "Uncategorized".
+     */
+    public function deleteCategory(string $categoryId): void
+    {
+        $response = $this->request()->delete(self::BASE_URL."/categories/{$categoryId}");
+
+        $this->ensureOk($response, "DELETE /categories/{$categoryId}");
+    }
+
+    /**
      * Fetch a single article including its `text` body.
      *
      * @return array{id: string, number: int, slug: string, name: string, status: string, text: string, updatedAt: string, collectionId: string, categories: array<int, string>}
