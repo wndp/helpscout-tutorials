@@ -2,7 +2,7 @@
 
 A Laravel toolchain for maintaining HelpScout Docs articles from a repo.
 
-Ships three artisan commands (`tutorials:download`, `tutorials:publish`, `tutorials:create`) plus a one-shot installer that also drops Claude Code slash-command templates into `.claude/commands/` so the same workflow is driveable from Claude Code.
+Ships six artisan commands (`tutorials:download`, `tutorials:publish`, `tutorials:create`, plus `tutorials:categories`, `tutorials:category`, and `tutorials:categorize` for managing categories) plus a one-shot installer that also drops Claude Code slash-command templates into `.claude/commands/` so the same workflow is driveable from Claude Code.
 
 ## Install
 
@@ -66,17 +66,48 @@ php artisan tutorials:create path/to/file.draft.html \
   --status=published
 ```
 
+### `tutorials:categories`
+
+Lists the categories in a collection along with their IDs (resolved from the local manifest, so run `tutorials:download` first).
+
+```sh
+php artisan tutorials:categories YourCollection
+```
+
+### `tutorials:category`
+
+Creates, updates, or deletes a category. The first argument is the action.
+
+```sh
+php artisan tutorials:category create --collection=YourCollection --name="How-tos" --visibility=public
+php artisan tutorials:category update --id={category_id} --name="Renamed" --order=2
+php artisan tutorials:category delete --id={category_id}
+```
+
+Options: `--name`, `--slug`, `--visibility` (public/private), `--order` (int), `--default-sort` (popularity/name), `--dry-run`. For `update`, omit `--name` to keep the current name — the command fetches it for you. Deleting a category moves its articles to HelpScout's "Uncategorized"; it does not delete the articles.
+
+### `tutorials:categorize`
+
+Sets the categories an article belongs to within its collection. This **replaces** the article's category list with exactly the ones you pass; values are matched against category name, slug, or ID.
+
+```sh
+php artisan tutorials:categorize {article_id} --category="How-tos" --category="FAQ"
+php artisan tutorials:categorize {article_id} --category={category_id} --dry-run
+```
+
 ## Claude Code slash commands
 
-The installer copies five slash-command templates to `.claude/commands/`:
+The installer copies seven slash-command templates to `.claude/commands/`:
 
 - `/tutorials-download` — wraps `tutorials:download`
 - `/tutorials-publish` — per-article confirmation loop around `tutorials:publish`
 - `/tutorials-create` — per-draft confirmation loop around `tutorials:create`
+- `/tutorials-categories` — interactive category management (list/create/update/delete) around `tutorials:categories` and `tutorials:category`
+- `/tutorials-categorize` — sets an article's categories around `tutorials:categorize`
 - `/tutorials-review` — compares downloaded articles against the current code and writes `*.proposed.html` updates
 - `/tutorials-coverage` — audits which user-facing surfaces have no tutorial and writes a prioritized gap report
 
-The first three are pure wrappers around the artisan commands and work in any project as-is. The templates use `php artisan`; if your project uses Sail, adjust to `vendor/bin/sail artisan` after publishing.
+The first five are pure wrappers around the artisan commands and work in any project as-is. The templates use `php artisan`; if your project uses Sail, adjust to `vendor/bin/sail artisan` after publishing.
 
 `/tutorials-review` and `/tutorials-coverage` reason about *your* codebase, so they're written for a **Laravel + Inertia (Vue)** app — backend in `app/`, routes in `routes/web.php`, UI under `resources/js/`. The directory paths are concrete; the only things that vary per app are a few identifiers (your primary layout/nav component, permission props, custom route prefixes), and each command has a note near the top calling those out to confirm.
 
@@ -92,7 +123,7 @@ return [
 ];
 ```
 
-If `default_collection` is set, `tutorials:download` and `tutorials:create` will use it when `--collection` is not passed.
+If `default_collection` is set, `tutorials:download`, `tutorials:create`, and `tutorials:category create` will use it when `--collection` is not passed.
 
 ## Storage layout
 
