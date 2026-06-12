@@ -2,7 +2,7 @@
 description: Publish proposed tutorial updates back to HelpScout, one article at a time with per-article confirmation.
 ---
 
-You are running the **publish** phase of the HelpScout tutorial maintenance workflow.
+You are running phase 3 of the HelpScout tutorial maintenance workflow: **publish**.
 
 ## What this does
 
