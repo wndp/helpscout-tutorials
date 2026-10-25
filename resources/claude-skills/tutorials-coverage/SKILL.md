@@ -1,4 +1,5 @@
 ---
+name: tutorials-coverage
 description: Identify user-facing app features that have no HelpScout tutorial, and propose what to write.
 ---
 
@@ -10,11 +11,12 @@ This command assumes a Laravel + Inertia (Vue) app. The paths in step 2 are conc
 
 ## Prerequisites
 
-- `storage/helpscout-tutorials/manifest.json` must exist so we know what tutorials currently exist. If it does not, tell the user to run `/tutorials-download` first and stop.
+- The storage directory is `storage/helpscout-tutorials/` unless `HELPSCOUT_TUTORIALS_PATH` overrides it (check with `php artisan config:show helpscout-tutorials`). Paths below are relative to it.
+- `manifest.json` must exist so we know what tutorials currently exist. If it does not, tell the user to run `/tutorials-download` first and stop.
 
 ## Steps
 
-1. Read `storage/helpscout-tutorials/manifest.json`. Build the list of published article names + IDs + slugs. (Treat `status=notpublished` articles as *not covering* their topic — they are effectively retired.)
+1. Read `manifest.json`. Build the list of published article names + IDs + slugs. (Treat `status=notpublished` articles as *not covering* their topic — they are effectively retired.)
 2. Discover the app's user-facing surfaces. Use an Explore subagent for breadth; ask it to enumerate, with file paths as evidence:
    - Every top-nav item in the app's primary layout (typically `resources/js/Layouts/AppLayout.vue` — confirm the actual filename), excluding items gated on an admin-only condition (e.g. a `canManage*`/`isAdmin` prop).
    - Every top-level page under `resources/js/Pages/` that a non-admin user can reach. Skip the `Admin/`, `Api/`, `Public/`, and `Auth/` subtrees (login, password reset, 2FA challenge — though 2FA *setup* is worth noting).
@@ -30,7 +32,7 @@ This command assumes a Laravel + Inertia (Vue) app. The paths in step 2 are conc
    - **High** — top-nav items, or features a brand-new user is likely to encounter in their first session.
    - **Medium** — features that exist but require a user to seek them out (settings, team management, exports).
    - **Low** — security niceties, advanced affordances, or things power users figure out on their own.
-5. Write the report to `storage/helpscout-tutorials/coverage-report.md` with this structure:
+5. Write the report to `coverage-report.md` in the storage directory with this structure:
 
    ```markdown
    # Tutorial coverage report

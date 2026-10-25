@@ -1,4 +1,5 @@
 ---
+name: tutorials-publish
 description: Publish proposed tutorial updates back to HelpScout, one article at a time with per-article confirmation.
 ---
 
@@ -52,7 +53,4 @@ This is reversible — re-publish later with `--status=published`. Always offer 
 - **Do not delete `*.proposed.html` files after publishing.** They are useful for diffing later.
 - If `tutorials:publish` returns a non-zero exit code, report the error verbatim and ask the user how to proceed before continuing to the next article.
 
-## Note for Laravel Sail projects
-
-If this project uses Laravel Sail, prefix each command with `vendor/bin/sail` instead of running `php` directly:
-`vendor/bin/sail artisan tutorials:publish ...`
+If this project uses Laravel Sail, run `vendor/bin/sail artisan` instead of `php artisan`.

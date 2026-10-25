@@ -37,10 +37,6 @@ class HelpScoutTutorialsServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../config/helpscout-tutorials.php' => config_path('helpscout-tutorials.php'),
             ], 'helpscout-tutorials-config');
-
-            $this->publishes([
-                __DIR__.'/../resources/claude-commands' => base_path('.claude/commands'),
-            ], 'helpscout-tutorials-claude-commands');
         }
     }
 }

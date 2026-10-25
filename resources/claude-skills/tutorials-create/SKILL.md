@@ -1,4 +1,5 @@
 ---
+name: tutorials-create
 description: Create a new HelpScout Docs article from a local *.draft.html file (used for tutorials that do not exist in HelpScout yet).
 ---
 
@@ -51,7 +52,4 @@ php artisan tutorials:create {file-relative-to-storage-path-or-absolute} \
 - **Do not delete the local `*.draft.html` file after creation.** Future downloads will fetch the new article as a `*.original.html` so diffing remains possible.
 - If `tutorials:create` returns a non-zero exit code, report the error verbatim and ask the user how to proceed.
 
-## Note for Laravel Sail projects
-
-If this project uses Laravel Sail, prefix each command with `vendor/bin/sail` instead of running `php` directly:
-`vendor/bin/sail artisan tutorials:create ...`
+If this project uses Laravel Sail, run `vendor/bin/sail artisan` instead of `php artisan`.

@@ -1,4 +1,5 @@
 ---
+name: tutorials-review
 description: Review downloaded HelpScout tutorials against the current codebase and propose updates.
 ---
 
@@ -14,11 +15,12 @@ This command assumes a Laravel + Inertia (Vue) app: backend in `app/`, routes in
 
 ## Prerequisites
 
-- `storage/helpscout-tutorials/manifest.json` must exist. If it doesn't, tell the user to run `/tutorials-download` first and stop.
+- The storage directory is `storage/helpscout-tutorials/` unless `HELPSCOUT_TUTORIALS_PATH` overrides it (check with `php artisan config:show helpscout-tutorials`). Paths below are relative to it.
+- `manifest.json` must exist. If it doesn't, tell the user to run `/tutorials-download` first and stop.
 
 ## Steps
 
-1. Read `storage/helpscout-tutorials/manifest.json` to get the list of articles.
+1. Read `manifest.json` to get the list of articles.
 2. Get a sense of recent application changes:
    - `git log --since="6 months ago" --pretty=format:"%h %ad %s" --date=short`
    - Skim `app/Http/Controllers/`, `resources/js/Pages/`, `resources/js/Components/`, and `routes/web.php` when needed to understand current behavior. Use Explore subagents for breadth.

@@ -1,4 +1,5 @@
 ---
+name: tutorials-download
 description: Download all published HelpScout Docs tutorials into local storage for review.
 ---
 

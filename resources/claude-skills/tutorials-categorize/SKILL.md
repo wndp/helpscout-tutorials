@@ -1,4 +1,5 @@
 ---
+name: tutorials-categorize
 description: Set which categories a HelpScout article belongs to within its collection.
 ---
 
@@ -39,7 +40,4 @@ Sets the full list of categories an article belongs to and `PUT`s it to HelpScou
 - Use `--dry-run` to preview the resolved category IDs before committing.
 - If the command returns a non-zero exit code, report the error verbatim and ask how to proceed.
 
-## Note for Laravel Sail projects
-
-If this project uses Laravel Sail, prefix each command with `vendor/bin/sail` instead of running `php` directly:
-`vendor/bin/sail artisan tutorials:categorize ...`
+If this project uses Laravel Sail, run `vendor/bin/sail artisan` instead of `php artisan`.

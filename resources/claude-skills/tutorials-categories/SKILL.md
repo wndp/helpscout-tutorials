@@ -1,4 +1,5 @@
 ---
+name: tutorials-categories
 description: Manage HelpScout Docs categories — list, create, rename, or delete categories within a collection.
 ---
 
@@ -46,7 +47,4 @@ Lists the categories in a collection and lets the user create, update (rename / 
 - Use `--dry-run` on any command to preview the request without calling the API.
 - If a command returns a non-zero exit code, report the error verbatim and ask how to proceed.
 
-## Note for Laravel Sail projects
-
-If this project uses Laravel Sail, prefix each command with `vendor/bin/sail` instead of running `php` directly:
-`vendor/bin/sail artisan tutorials:categories ...`
+If this project uses Laravel Sail, run `vendor/bin/sail artisan` instead of `php artisan`.
