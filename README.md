@@ -1,8 +1,17 @@
 # HelpScout Tutorials
 
-A Laravel toolchain for maintaining HelpScout Docs articles from a repo.
+A Laravel toolchain for keeping HelpScout Docs articles in step with your app's code.
 
-Ships six artisan commands (`tutorials:download`, `tutorials:publish`, `tutorials:create`, plus `tutorials:categories`, `tutorials:category`, and `tutorials:categorize` for managing categories) plus a one-shot installer that links matching Claude Code skills into `.claude/skills/` so the same workflow is driveable from Claude Code.
+It ships Claude Code skills that review your articles against the codebase, draft new ones, and post them to HelpScout with per-article confirmation, plus the artisan commands those skills run (`tutorials:download`, `tutorials:publish`, `tutorials:create`, `tutorials:categories`, `tutorials:category`, `tutorials:categorize`), which you can also use directly.
+
+A typical session in Claude Code:
+
+```
+/tutorials-review team invitations   # update or draft the article for one feature, then post it
+/tutorials-review                    # or check every article and write proposed fixes
+/tutorials-publish                   # post the proposed fixes, one article at a time
+/tutorials-coverage                  # find features that have no article yet
+```
 
 ## Install
 
@@ -99,7 +108,7 @@ php artisan tutorials:categorize {article_id} --category={category_id} --dry-run
 
 The skills live in this package under `resources/claude-skills/`. The installer symlinks each one into your app's `.claude/skills/` with a relative link (e.g. `.claude/skills/tutorials-review → ../../vendor/wndp/helpscout-tutorials/resources/claude-skills/tutorials-review`), so Claude Code reads them straight from `vendor/`. Nothing is copied: a `composer update` changes the skills along with the artisan commands, and each app uses the skills matching its installed package version.
 
-The links are relative, so you can commit them and teammates get the skills after `composer install`. Re-run `php artisan tutorials:install` after updating the package if a release adds or renames a skill; it is safe to re-run and removes links to skills that no longer exist. If symlinks aren't available (e.g. Windows without developer mode), the installer copies the skills instead and warns you.
+The links are relative, so you can commit them and teammates get the skills after `composer install`. Re-run `php artisan tutorials:install` after updating the package if a release adds or renames a skill; it is safe to re-run and removes links to skills that no longer exist. If `.claude/skills/` already has a real directory with a skill's name, the installer leaves it alone unless you pass `--force`. If symlinks aren't available (e.g. Windows without developer mode), the installer copies the skills instead and warns you.
 
 Four skills are linked:
 
@@ -110,7 +119,7 @@ Four skills are linked:
 
 Each skill runs `tutorials:download` itself when the local copy is missing (`/tutorials-review` also refreshes it when it's more than a day old), so there's no separate download step. `/tutorials-publish` and `/tutorials-categories` work in any project as-is. They use `php artisan` and tell Claude to switch to `vendor/bin/sail artisan` in Sail projects.
 
-`/tutorials-review` and `/tutorials-coverage` reason about *your* codebase, so they're written for a **Laravel + Inertia (Vue)** app — backend in `app/`, routes in `routes/web.php`, UI under `resources/js/`. The directory paths are concrete; the only things that vary per app are a few identifiers (your primary layout/nav component, permission props, custom route prefixes), and each skill has a note near the top calling those out to confirm.
+`/tutorials-review` and `/tutorials-coverage` reason about *your* codebase, so they're written for a **Laravel + Inertia (Vue)** app — backend in `app/`, routes in `routes/web.php`, UI under `resources/js/`. The directory paths are concrete; Claude confirms the app-specific details, like your primary layout/nav component, permission props, and custom route prefixes, against your code before relying on them.
 
 ## Config
 
@@ -131,13 +140,17 @@ If `default_collection` is set, `tutorials:download`, `tutorials:create`, and `t
 ```
 storage/{storage_path}/
 ├── manifest.json
+├── coverage-report.md                    # (Optional) written by /tutorials-coverage
 └── {collection-slug}/
     ├── {article-slug}.original.html      # Source of truth from HelpScout
     ├── {article-slug}.proposed.html      # (Optional) edits awaiting publish
-    └── {article-slug}.notes.md           # (Optional) reviewer notes
+    ├── {article-slug}.notes.md           # (Optional) reviewer notes
+    └── new/
+        ├── {slug}.draft.html             # (Optional) new article awaiting create
+        └── {slug}.notes.md               # (Optional) suggested title, sources, screenshots
 ```
 
-For new articles that don't exist in HelpScout yet, conventionally put drafts under `{collection-slug}/new/{slug}.draft.html` with a sibling `{slug}.notes.md`.
+`tutorials:download` overwrites `*.original.html` and `manifest.json` only; proposed files, drafts, and notes are left alone.
 
 ## Tests
 
