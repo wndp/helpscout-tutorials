@@ -9,14 +9,11 @@ class InstallCommandTest extends TestCase
 {
     private string $skillsPath;
 
-    private string $commandsPath;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->skillsPath = base_path('.claude/skills');
-        $this->commandsPath = base_path('.claude/commands');
         $this->cleanUp();
     }
 
@@ -37,7 +34,7 @@ class InstallCommandTest extends TestCase
         $this->assertStringStartsWith('../', readlink($link));
         $this->assertFileExists($link.'/SKILL.md');
         $this->assertStringContainsString('name: tutorials-review', File::get($link.'/SKILL.md'));
-        $this->assertCount(7, glob($this->skillsPath.'/tutorials-*'));
+        $this->assertCount(4, glob($this->skillsPath.'/tutorials-*'));
     }
 
     public function test_rerunning_replaces_existing_links(): void
@@ -74,20 +71,6 @@ class InstallCommandTest extends TestCase
 
         $this->assertFalse(is_link($this->skillsPath.'/tutorials-retired'));
         $this->assertTrue(is_link($this->skillsPath.'/my-skill'));
-    }
-
-    public function test_offers_to_remove_legacy_command_copies(): void
-    {
-        File::ensureDirectoryExists($this->commandsPath);
-        File::put($this->commandsPath.'/tutorials-review.md', 'old copy');
-        File::put($this->commandsPath.'/my-own-command.md', 'keep me');
-
-        $this->artisan('tutorials:install')
-            ->expectsConfirmation('Remove 1 old tutorials-*.md copies from .claude/commands/? They are replaced by the linked skills.', 'yes')
-            ->assertSuccessful();
-
-        $this->assertFileDoesNotExist($this->commandsPath.'/tutorials-review.md');
-        $this->assertFileExists($this->commandsPath.'/my-own-command.md');
     }
 
     private function cleanUp(): void

@@ -1,56 +1,64 @@
 ---
 name: tutorials-publish
-description: Publish proposed tutorial updates back to HelpScout, one article at a time with per-article confirmation.
+description: Push local tutorial changes to HelpScout — publish edits to existing articles, create new articles from drafts, or unpublish an article — one article at a time with per-article confirmation.
+argument-hint: "[article or file]"
 ---
 
-You are running phase 3 of the HelpScout tutorial maintenance workflow: **publish**.
+You are running the publish phase of the HelpScout tutorial maintenance workflow. It sends local changes to HelpScout:
 
-## What this does
+- **Edits** — an existing article with a `*.proposed.html` next to its `*.original.html` is `PUT` via `php artisan tutorials:publish`.
+- **New articles** — a `*.draft.html` (conventionally `{collection-slug}/new/{slug}.draft.html`) is `POST`ed via `php artisan tutorials:create`.
+- **Unpublishing** — an existing article is taken down via `php artisan tutorials:publish --status=notpublished`.
 
-For each article that has a `*.proposed.html` file alongside its `*.original.html`, show the diff, ask the user to publish / skip / open-in-editor, and on approval `PUT` the new content to HelpScout via `php artisan tutorials:publish`.
+Limit to: $ARGUMENTS
+
+If an article (by name or ID) or a file is named above, work on only that item. Otherwise process everything pending.
 
 ## Prerequisites
 
-- A `manifest.json` must exist in the configured storage directory (run `/tutorials-download` first if not).
-- At least one article must have a `*.proposed.html` file. If none do, tell the user to run their review step first and stop.
-- `HELPSCOUT_DOCS_API_KEY` must be set in `.env`.
+- `HELPSCOUT_DOCS_API_KEY` must be set in `.env`. If not, stop and ask the user to add it — do NOT prompt for the key in chat or write it to any file.
+- The storage directory is `storage/helpscout-tutorials/` unless `HELPSCOUT_TUTORIALS_PATH` overrides it (check with `php artisan config:show helpscout-tutorials`). Paths below are relative to it.
+- `manifest.json` must exist so article and collection IDs can be resolved. If it doesn't, run `php artisan tutorials:download` (pass `--collection=...` if no `default_collection` is configured and the user named one). Re-downloading overwrites `*.original.html` and `manifest.json` only; `*.proposed.html`, `*.draft.html`, and `*.notes.md` are left alone.
 
 ## Steps
 
-1. Read `manifest.json` to enumerate articles.
-2. Build a list of articles that have a `*.proposed.html` (skip those that don't).
-3. Do a quick dry-run sanity check on the first article:
+1. Read `manifest.json` and build two lists (filtered to the named item, if any):
+   - **Edits:** articles that have a non-empty `*.proposed.html`.
+   - **Drafts:** every non-empty `*.draft.html` under the storage directory.
+   If both are empty and the user didn't ask to unpublish something, tell them to run `/tutorials-review` (or write a draft) first and stop.
+2. Dry-run the first item to sanity-check config and the payload:
    ```
-   php artisan tutorials:publish {first_article_id} --dry-run
+   php artisan tutorials:publish {article_id} --dry-run
+   php artisan tutorials:create {draft-path} --name="..." --collection=... --dry-run
    ```
    If that fails, stop and report the error.
-4. Iterate the articles in collection order. For each one:
-   a. Show the article name, ID, collection, and `*.notes.md` content if present.
-   b. Show the diff between `.original.html` and `.proposed.html`. Use `git diff --no-index --word-diff=color <original> <proposed>` or `diff -u`. Truncate to ~150 lines and offer to show more if asked.
-   c. Use `AskUserQuestion` with options:
-      - **Publish** — call `php artisan tutorials:publish {article_id}` and report the result.
-      - **Skip** — move to the next article. Do not call the API.
-      - **Show full diff** — print the full diff, then re-ask.
-      - **Stop** — halt the loop, do nothing further.
-   d. After publish, continue to the next article.
-5. At the end, print a summary: articles published, articles skipped, any errors. Remind the user to manually verify in the HelpScout admin UI.
+3. **Edits**, in collection order. For each article:
+   a. Show the article name, ID, collection, and its `*.notes.md` if present.
+   b. Show the diff: `git diff --no-index --word-diff=color <original> <proposed>` (or `diff -u`). Truncate to ~150 lines and offer to show more.
+   c. Ask with `AskUserQuestion`: **Publish** (`php artisan tutorials:publish {article_id}`), **Skip**, **Show full diff** (then re-ask), or **Stop**.
+4. **Drafts**. For each draft:
+   a. Show the path and its sibling `*.notes.md` if present.
+   b. Pick the title (`--name`) from the notes; otherwise ask. Omit `--slug` unless the user wants a specific URL. Confirm the target collection resolves in the manifest.
+   c. Ask with `AskUserQuestion`: **Create (published)**, **Create (notpublished)** (soft launch), **Skip**, **Show full draft** (then re-ask), or **Stop**.
+   d. On create, run `php artisan tutorials:create {draft-path} --name="..." --collection=... --status=...` and report the new article ID.
+5. Print a summary: published, created (with IDs), skipped, errors. Remind the user to verify in the HelpScout admin UI. If anything was created, run `php artisan tutorials:download` so the new articles join the manifest.
 
 ## Unpublishing an article
 
-If the user wants to take an article *down* (e.g. the underlying feature was removed), use the same command with `--status=notpublished` and no proposed file required:
+If the user wants to take an article *down* (e.g. the feature was removed), no proposed file is needed:
 
 ```
 php artisan tutorials:publish {article_id} --status=notpublished
 ```
 
-This is reversible — re-publish later with `--status=published`. Always offer this as the default removal mode unless the user explicitly asks to delete the article from HelpScout permanently (which this workflow does not support — they would need to do that in the HelpScout admin UI).
+This is reversible with `--status=published`. Offer it as the default removal mode; permanent deletion isn't supported here and must be done in the HelpScout admin UI.
 
 ## Guardrails
 
-- **One article per `PUT`.** Do not batch updates. Each one goes through the artisan command with its specific article ID.
-- **Never publish an article whose `*.proposed.html` is missing or empty.** The artisan command guards against this; respect the failure.
-- **If the user picks "Stop", do not publish anything further** in this run, even if you've already shown diffs for later articles.
-- **Do not delete `*.proposed.html` files after publishing.** They are useful for diffing later.
-- If `tutorials:publish` returns a non-zero exit code, report the error verbatim and ask the user how to proceed before continuing to the next article.
-
-If this project uses Laravel Sail, run `vendor/bin/sail artisan` instead of `php artisan`.
+- **One article per request.** Never batch updates or creations.
+- **Never send an empty file.** The artisan commands guard against a missing or empty `*.proposed.html`; check `*.draft.html` size yourself.
+- **Article names must be unique within a collection.** If a create fails with a name collision, ask the user for another title.
+- **If the user picks "Stop", send nothing further** in this run, even if you've already shown later diffs.
+- **Do not delete `*.proposed.html` or `*.draft.html` after sending.** They are useful for diffing later.
+- If a command returns a non-zero exit code, report the error verbatim and ask how to proceed before continuing.
+- If this project uses Laravel Sail, run `vendor/bin/sail artisan` instead of `php artisan`.

@@ -5,14 +5,14 @@ description: Identify user-facing app features that have no HelpScout tutorial, 
 
 You are auditing tutorial coverage. The goal is to find user-facing surfaces of this app that have no corresponding HelpScout article, and to deliver a prioritized list the team can act on.
 
-This is a **read-only research command.** Do not write code, modify the app, draft new tutorial bodies, or call the HelpScout API. Output is a single markdown report on disk plus a short chat summary.
+This is a **read-only research command.** Do not write code, modify the app, draft new tutorial bodies, or call the HelpScout API (other than downloading the current articles if needed). Output is a single markdown report on disk plus a short chat summary.
 
 This command assumes a Laravel + Inertia (Vue) app. The paths in step 2 are concrete; only the app-specific identifiers — your primary layout/nav component, permission props, and any custom route prefixes — need a quick confirm against this codebase before you rely on them.
 
 ## Prerequisites
 
 - The storage directory is `storage/helpscout-tutorials/` unless `HELPSCOUT_TUTORIALS_PATH` overrides it (check with `php artisan config:show helpscout-tutorials`). Paths below are relative to it.
-- `manifest.json` must exist so we know what tutorials currently exist. If it does not, tell the user to run `/tutorials-download` first and stop.
+- `manifest.json` must exist so we know what tutorials currently exist. If it is missing, run `php artisan tutorials:download` first (pass `--collection=...` if no `default_collection` is configured and the user named one). This needs `HELPSCOUT_DOCS_API_KEY` in `.env` — if it's missing, stop and ask the user to add it; never ask for the key in chat. Re-downloading overwrites `*.original.html` and `manifest.json` only; `*.proposed.html`, `*.draft.html`, and `*.notes.md` are left alone. On HTTP 401 the key is invalid; on HTTP 429 the rate limit was hit (the client already retried) — report it and stop.
 
 ## Steps
 
@@ -70,6 +70,6 @@ This command assumes a Laravel + Inertia (Vue) app. The paths in step 2 are conc
 
 - **Be conservative.** If a feature is plausibly covered by an existing tutorial, mark it covered and move on. False positives (claiming a gap that does not exist) waste the team's time more than false negatives.
 - **Do not draft new tutorial bodies.** Suggest titles only. If the user wants a draft of a specific article, they will ask for it explicitly in a separate turn.
-- **Do not call the HelpScout API.** This audit is local-only.
+- **Do not call the HelpScout API** beyond the download above. The audit itself is local-only.
 - **Do not modify any other file**, including the manifest, the `.original.html` files, or any code in this app.
 - If you find no gaps at all, still write the report (it's a useful artifact); say so plainly in the chat summary.

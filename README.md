@@ -93,17 +93,14 @@ The skills live in this package under `resources/claude-skills/`. The installer 
 
 The links are relative, so you can commit them and teammates get the skills after `composer install`. Re-run `php artisan tutorials:install` after updating the package if a release adds or renames a skill; it is safe to re-run and removes links to skills that no longer exist. If symlinks aren't available (e.g. Windows without developer mode), the installer copies the skills instead and warns you.
 
-Seven skills are linked:
+Four skills are linked:
 
-- `/tutorials-download` — wraps `tutorials:download`
-- `/tutorials-publish` — per-article confirmation loop around `tutorials:publish`
-- `/tutorials-create` — per-draft confirmation loop around `tutorials:create`
-- `/tutorials-categories` — interactive category management (list/create/update/delete) around `tutorials:categories` and `tutorials:category`
-- `/tutorials-categorize` — sets an article's categories around `tutorials:categorize`
-- `/tutorials-review` — compares downloaded articles against the current code and writes `*.proposed.html` updates
+- `/tutorials-review [feature]` — compares the articles against the current code and writes `*.proposed.html` updates. Give it a feature (e.g. `/tutorials-review team invitations`) to work on just that feature: it updates the matching article, or drafts a new one if none exists, and then offers to post it to HelpScout
 - `/tutorials-coverage` — audits which user-facing surfaces have no tutorial and writes a prioritized gap report
+- `/tutorials-publish [article or file]` — per-article confirmation loop that publishes `*.proposed.html` edits (`tutorials:publish`), creates articles from `*.draft.html` files (`tutorials:create`), and unpublishes articles
+- `/tutorials-categories` — manages categories (`tutorials:categories`, `tutorials:category`) and sets which categories an article belongs to (`tutorials:categorize`)
 
-The first five are pure wrappers around the artisan commands and work in any project as-is. They use `php artisan` and tell Claude to switch to `vendor/bin/sail artisan` in Sail projects.
+Each skill runs `tutorials:download` itself when the local copy is missing (`/tutorials-review` also refreshes it when it's more than a day old), so there's no separate download step. `/tutorials-publish` and `/tutorials-categories` work in any project as-is. They use `php artisan` and tell Claude to switch to `vendor/bin/sail artisan` in Sail projects.
 
 `/tutorials-review` and `/tutorials-coverage` reason about *your* codebase, so they're written for a **Laravel + Inertia (Vue)** app — backend in `app/`, routes in `routes/web.php`, UI under `resources/js/`. The directory paths are concrete; the only things that vary per app are a few identifiers (your primary layout/nav component, permission props, custom route prefixes), and each skill has a note near the top calling those out to confirm.
 

@@ -16,7 +16,6 @@ class InstallCommand extends Command
     {
         $this->publishConfig();
         $this->linkClaudeSkills();
-        $this->removeLegacyCommands();
         $this->ensureEnvLine();
         $this->ensureGitignoreLine();
 
@@ -96,32 +95,6 @@ class InstallCommand extends Command
                 unlink($link);
             }
         }
-    }
-
-    /*
-     * Releases before 0.3.0 copied the templates into .claude/commands/. They
-     * would now shadow the linked skills with stale copies.
-     */
-    private function removeLegacyCommands(): void
-    {
-        $legacy = array_filter(
-            array_map(
-                fn (string $skillPath) => base_path('.claude/commands/'.basename($skillPath).'.md'),
-                File::directories(__DIR__.'/../../resources/claude-skills'),
-            ),
-            fn (string $path) => File::exists($path),
-        );
-
-        if ($legacy === []) {
-            return;
-        }
-
-        if (! $this->confirm('Remove '.count($legacy).' old tutorials-*.md copies from .claude/commands/? They are replaced by the linked skills.', true)) {
-            return;
-        }
-
-        File::delete($legacy);
-        $this->line('Removed old copies from .claude/commands/');
     }
 
     private function relativePath(string $from, string $to): string

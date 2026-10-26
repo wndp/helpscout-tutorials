@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `/tutorials-review` accepts a feature, e.g. `/tutorials-review team invitations`. It updates the article covering that feature, or drafts a new one if none exists, then offers to post it to HelpScout.
+- `/tutorials-publish` accepts an article or file name to post just that item.
+
 ### Changed
 
-- **BREAKING:** The Claude Code templates are now skills that stay in the package. `tutorials:install` symlinks them into `.claude/skills/` with relative links instead of copying them into `.claude/commands/`, so they update with the package. The slash-command names are unchanged. Re-run `php artisan tutorials:install`; it offers to remove the old copies from `.claude/commands/`. The `helpscout-tutorials-claude-commands` publish tag has been removed.
+- The Claude Code templates are now skills that stay in the package. `tutorials:install` symlinks them into `.claude/skills/` with relative links instead of copying them into `.claude/commands/`, so they update with the package.
+- Consolidated the seven Claude Code templates into four skills. `/tutorials-create` is now part of `/tutorials-publish`, and `/tutorials-categorize` is now part of `/tutorials-categories`. `/tutorials-download` is removed because the other skills download the articles themselves when needed.
 - Licensed under MIT.
 - Allow PHPUnit 13; test against PHP 8.5.
 
