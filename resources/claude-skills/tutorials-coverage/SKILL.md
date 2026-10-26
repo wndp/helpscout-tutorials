@@ -5,9 +5,9 @@ description: Identify user-facing app features that have no HelpScout tutorial, 
 
 You are auditing tutorial coverage. The goal is to find user-facing surfaces of this app that have no corresponding HelpScout article, and to deliver a prioritized list the team can act on.
 
-This is a **read-only research command.** Do not write code, modify the app, draft new tutorial bodies, or call the HelpScout API (other than downloading the current articles if needed). Output is a single markdown report on disk plus a short chat summary.
+This is a **read-only research skill.** Do not write code, modify the app, draft new tutorial bodies, or call the HelpScout API (other than downloading the current articles if needed). Output is a single markdown report on disk plus a short chat summary.
 
-This command assumes a Laravel + Inertia (Vue) app. The paths in step 2 are concrete; only the app-specific identifiers — your primary layout/nav component, permission props, and any custom route prefixes — need a quick confirm against this codebase before you rely on them.
+This skill assumes a Laravel + Inertia (Vue) app. The paths in step 2 are concrete; only the app-specific identifiers — your primary layout/nav component, permission props, and any custom route prefixes — need a quick confirm against this codebase before you rely on them.
 
 ## Prerequisites
 
