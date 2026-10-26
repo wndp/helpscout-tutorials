@@ -2,15 +2,15 @@
 
 A Laravel toolchain for maintaining HelpScout Docs articles from a repo.
 
-Ships six artisan commands (`tutorials:download`, `tutorials:publish`, `tutorials:create`, plus `tutorials:categories`, `tutorials:category`, and `tutorials:categorize` for managing categories) plus a one-shot installer that also drops Claude Code slash-command templates into `.claude/commands/` so the same workflow is driveable from Claude Code.
+Ships six artisan commands (`tutorials:download`, `tutorials:publish`, `tutorials:create`, plus `tutorials:categories`, `tutorials:category`, and `tutorials:categorize` for managing categories) plus a one-shot installer that links matching Claude Code skills into `.claude/skills/` so the same workflow is driveable from Claude Code.
 
 ## Install
 
-This package is private. Add the repository to your project's `composer.json`:
+The package isn't on Packagist. Add the repository to your project's `composer.json`:
 
 ```json
 "repositories": [
-    { "type": "vcs", "url": "git@github.com:wndp/helpscout-tutorials.git" }
+    { "type": "vcs", "url": "https://github.com/wndp/helpscout-tutorials" }
 ]
 ```
 
@@ -25,7 +25,7 @@ The installer:
 - Publishes `config/helpscout-tutorials.php`
 - Adds `HELPSCOUT_DOCS_API_KEY=` to your `.env` if missing
 - Adds `/storage/helpscout-tutorials` to `.gitignore` if missing
-- Copies the slash-command templates to `.claude/commands/`
+- Symlinks the Claude Code skills into `.claude/skills/`
 
 Get a HelpScout Docs API key from your HelpScout account and set it in `.env`:
 
@@ -95,21 +95,22 @@ php artisan tutorials:categorize {article_id} --category="How-tos" --category="F
 php artisan tutorials:categorize {article_id} --category={category_id} --dry-run
 ```
 
-## Claude Code slash commands
+## Claude Code skills
 
-The installer copies seven slash-command templates to `.claude/commands/`:
+The skills live in this package under `resources/claude-skills/`. The installer symlinks each one into your app's `.claude/skills/` with a relative link (e.g. `.claude/skills/tutorials-review → ../../vendor/wndp/helpscout-tutorials/resources/claude-skills/tutorials-review`), so Claude Code reads them straight from `vendor/`. Nothing is copied: a `composer update` changes the skills along with the artisan commands, and each app uses the skills matching its installed package version.
 
-- `/tutorials-download` — wraps `tutorials:download`
-- `/tutorials-publish` — per-article confirmation loop around `tutorials:publish`
-- `/tutorials-create` — per-draft confirmation loop around `tutorials:create`
-- `/tutorials-categories` — interactive category management (list/create/update/delete) around `tutorials:categories` and `tutorials:category`
-- `/tutorials-categorize` — sets an article's categories around `tutorials:categorize`
-- `/tutorials-review` — compares downloaded articles against the current code and writes `*.proposed.html` updates
+The links are relative, so you can commit them and teammates get the skills after `composer install`. Re-run `php artisan tutorials:install` after updating the package if a release adds or renames a skill; it is safe to re-run and removes links to skills that no longer exist. If symlinks aren't available (e.g. Windows without developer mode), the installer copies the skills instead and warns you.
+
+Four skills are linked:
+
+- `/tutorials-review [feature]` — compares the articles against the current code and writes `*.proposed.html` updates. Give it a feature (e.g. `/tutorials-review team invitations`) to work on just that feature: it updates the matching article, or drafts a new one if none exists, and then offers to post it to HelpScout
 - `/tutorials-coverage` — audits which user-facing surfaces have no tutorial and writes a prioritized gap report
+- `/tutorials-publish [article or file]` — per-article confirmation loop that publishes `*.proposed.html` edits (`tutorials:publish`), creates articles from `*.draft.html` files (`tutorials:create`), and unpublishes articles
+- `/tutorials-categories` — manages categories (`tutorials:categories`, `tutorials:category`) and sets which categories an article belongs to (`tutorials:categorize`)
 
-The first five are pure wrappers around the artisan commands and work in any project as-is. The templates use `php artisan`; if your project uses Sail, adjust to `vendor/bin/sail artisan` after publishing.
+Each skill runs `tutorials:download` itself when the local copy is missing (`/tutorials-review` also refreshes it when it's more than a day old), so there's no separate download step. `/tutorials-publish` and `/tutorials-categories` work in any project as-is. They use `php artisan` and tell Claude to switch to `vendor/bin/sail artisan` in Sail projects.
 
-`/tutorials-review` and `/tutorials-coverage` reason about *your* codebase, so they're written for a **Laravel + Inertia (Vue)** app — backend in `app/`, routes in `routes/web.php`, UI under `resources/js/`. The directory paths are concrete; the only things that vary per app are a few identifiers (your primary layout/nav component, permission props, custom route prefixes), and each command has a note near the top calling those out to confirm.
+`/tutorials-review` and `/tutorials-coverage` reason about *your* codebase, so they're written for a **Laravel + Inertia (Vue)** app — backend in `app/`, routes in `routes/web.php`, UI under `resources/js/`. The directory paths are concrete; the only things that vary per app are a few identifiers (your primary layout/nav component, permission props, custom route prefixes), and each skill has a note near the top calling those out to confirm.
 
 ## Config
 
@@ -146,3 +147,7 @@ vendor/bin/phpunit
 ```
 
 Tests use Orchestra Testbench so no real Laravel app is required.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
