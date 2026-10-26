@@ -6,7 +6,15 @@ Ships six artisan commands (`tutorials:download`, `tutorials:publish`, `tutorial
 
 ## Install
 
-Add it as a dev dependency — this is a tooling package, not something your app needs at runtime:
+The package isn't on Packagist. Add the repository to your project's `composer.json`:
+
+```json
+"repositories": [
+    { "type": "vcs", "url": "https://github.com/wndp/helpscout-tutorials" }
+]
+```
+
+Then add it as a dev dependency — this is a tooling package, not something your app needs at runtime:
 
 ```sh
 composer require --dev wndp/helpscout-tutorials
